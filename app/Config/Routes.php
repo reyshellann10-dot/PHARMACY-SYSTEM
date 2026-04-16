@@ -8,41 +8,23 @@ if (file_exists(SYSTEMPATH . 'Config/Routes.php')) {
     require SYSTEMPATH . 'Config/Routes.php';
 }
 
-/*
- * --------------------------------------------------------------------
- * Router Setup
- * --------------------------------------------------------------------
- */
 $routes->setDefaultNamespace('App\Controllers');
 $routes->setDefaultController('Auth');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
-$routes->set404Override(function() {
-    echo view('errors/html/error_404');
-});
+$routes->set404Override();
+$routes->setAutoRoute(false);
 
-$routes->setAutoRoute(false);  // Keep auto route OFF for security
-
-/*
- * --------------------------------------------------------------------
- * PUBLIC ROUTES (No login required)
- * --------------------------------------------------------------------
- */
+// ========== PUBLIC ROUTES ==========
 $routes->get('/', 'Auth::index');
 $routes->get('/login', 'Auth::index');
 $routes->post('/auth', 'Auth::auth');
 $routes->get('/logout', 'Auth::logout');
 
-/*
- * --------------------------------------------------------------------
- * PROTECTED ROUTES (Login required)
- * --------------------------------------------------------------------
- */
-
-// Dashboard
+// ========== DASHBOARD ==========
 $routes->get('/dashboard', 'Dashboard::index');
 
-// ---------- PRODUCTS ----------
+// ========== PRODUCTS ==========
 $routes->group('products', function($routes) {
     $routes->get('/', 'Products::index');
     $routes->get('create', 'Products::create');
@@ -50,10 +32,11 @@ $routes->group('products', function($routes) {
     $routes->get('edit/(:num)', 'Products::edit/$1');
     $routes->post('update/(:num)', 'Products::update/$1');
     $routes->get('delete/(:num)', 'Products::delete/$1');
+    $routes->get('expiring', 'Products::expiring');
+    $routes->get('low-stock', 'Products::lowStock');
 });
 
-
-// ---------- CATEGORIES ----------
+// ========== CATEGORIES ==========
 $routes->group('categories', function($routes) {
     $routes->get('/', 'Categories::index');
     $routes->get('create', 'Categories::create');
@@ -63,7 +46,7 @@ $routes->group('categories', function($routes) {
     $routes->get('delete/(:num)', 'Categories::delete/$1');
 });
 
-// ---------- CUSTOMERS ----------
+// ========== CUSTOMERS ==========
 $routes->group('customers', function($routes) {
     $routes->get('/', 'Customers::index');
     $routes->get('create', 'Customers::create');
@@ -74,31 +57,50 @@ $routes->group('customers', function($routes) {
     $routes->get('view/(:num)', 'Customers::view/$1');
 });
 
-// ---------- SALES ----------
+// ========== SALES + POS (Point of Sale) ==========
 $routes->group('sales', function($routes) {
+    // Sales list
     $routes->get('/', 'Sales::index');
-    $routes->get('/sales/view/(:num)', 'Sales::view/$1');
+    $routes->get('view/(:num)', 'Sales::view/$1');
+    
+    // POS routes
+    $routes->get('pos', 'Sales::pos');
+    $routes->post('add-to-cart', 'Sales::addToCart');
+    $routes->post('remove-from-cart', 'Sales::removeFromCart');
+    $routes->post('update-cart', 'Sales::updateCart');
+    $routes->post('clear-cart', 'Sales::clearCart');
+    $routes->post('checkout', 'Sales::checkout');
+    $routes->get('receipt/(:num)', 'Sales::receipt/$1');
+    $routes->get('search-products', 'Sales::searchProducts');
+    
+    // Delete sale (void)
+    $routes->get('delete/(:num)', 'Sales::delete/$1');
 });
 
-// ---------- REPORTS ----------
+// ========== REPORTS ==========
 $routes->group('reports', function($routes) {
     $routes->get('/', 'Reports::index');
     $routes->get('sales', 'Reports::sales');
+    $routes->get('inventory', 'Reports::inventory');
 });
 
-// ---------- USERS (Admin only) ----------
+// ========== USERS (Admin only) ==========
 $routes->group('users', function($routes) {
     $routes->get('/', 'Users::index');
     $routes->post('save', 'Users::save');
     $routes->post('update', 'Users::update');
     $routes->get('edit/(:num)', 'Users::edit/$1');
     $routes->get('delete/(:num)', 'Users::delete/$1');
-    $routes->post('fetchRecords', 'Users::fetchRecords');
 });
 
-// ---------- LOGS (Admin only) ----------
+// ========== LOGS (Admin only) ==========
 $routes->group('log', function($routes) {
     $routes->get('/', 'Logs::log');
     $routes->get('clear', 'Logs::clear');
     $routes->get('export', 'Logs::export');
+});
+
+// ========== 404 HANDLER ==========
+$routes->set404Override(function() {
+    echo view('errors/html/error_404');
 });
