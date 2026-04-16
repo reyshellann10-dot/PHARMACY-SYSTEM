@@ -6,10 +6,18 @@ class Dashboard extends BaseController
 {
     public function index()
     {
-        if (!session()->get('user_id')) {
+        if (!session()->get('isLoggedIn')) {
             return redirect()->to('/login');
         }
-
-        return view('dashboard'); // create this view later
+        
+        $data = [
+            'title' => 'Dashboard',
+            'totalProducts' => 245,
+            'lowStockItems' => 12,
+            'expiringCount' => 8,
+            'todaySales' => 5420
+        ];
+        
+        return view('dashboard/index', $data);
     }
 }

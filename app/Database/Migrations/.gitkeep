@@ -1,0 +1,37 @@
+<?php
+namespace App\Database\Migrations;
+
+use CodeIgniter\Database\Migration;
+
+class CreatePharmacyTables extends Migration
+{
+    public function up()
+    {
+        // Users table
+        $this->forge->addField([
+            'user_id' => ['type' => 'INT', 'constraint' => 11, 'auto_increment' => true],
+            'username' => ['type' => 'VARCHAR', 'constraint' => 50, 'unique' => true],
+            'password' => ['type' => 'VARCHAR', 'constraint' => 255],
+            'email' => ['type' => 'VARCHAR', 'constraint' => 100, 'unique' => true],
+            'full_name' => ['type' => 'VARCHAR', 'constraint' => 100],
+            'role' => ['type' => 'ENUM', 'constraint' => ['admin', 'pharmacist', 'cashier'], 'default' => 'cashier'],
+            'created_at' => ['type' => 'DATETIME', 'null' => true],
+        ]);
+        $this->forge->addKey('user_id', true);
+        $this->forge->createTable('users');
+        
+        // Continue with other tables...
+    }
+    
+    public function down()
+    {
+        $this->forge->dropTable('stock_movements');
+        $this->forge->dropTable('prescriptions');
+        $this->forge->dropTable('sale_items');
+        $this->forge->dropTable('sales');
+        $this->forge->dropTable('customers');
+        $this->forge->dropTable('products');
+        $this->forge->dropTable('categories');
+        $this->forge->dropTable('users');
+    }
+}
